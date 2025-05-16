@@ -232,17 +232,12 @@ wrap_width = 110
 wrapper = textwrap.TextWrapper(width=wrap_width)
 
 # Shuffle and iterate through all questions
-question_list = list(questions.items())
-random.shuffle(question_list)
+for _ in questions:
+    question, answer = random.choice(list(questions.items()))
+    wrapped_answer = wrapper.fill(answer)
+    print(f"\n{question}\n{wrapped_answer}\n")
+    input("") #press enter to continue
 
-
-for question, answer in question_list:
-    print(f"\nQ: {question}\n")
-    # Wrap each paragraph in answer separately to preserve line breaks
-    for paragraph in answer.split('\n'):
-        wrapped = wrapper.fill(paragraph)
-        print(wrapped + '\n')
-    input()
 
 
 
