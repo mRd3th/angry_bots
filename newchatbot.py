@@ -1,7 +1,6 @@
 import random
-import textwrap
-from textwrap import wrap
 import time
+import textwrap
 
 questions = {
             "Is God real?" : "God/Jesus were the OG programmers coding existence and all of creation, \n Jesus wasnt performing miracles when he appeared, he programed himself into his own simulation to see what it was like, The term we are made in his image is because we are programed to look like him, in the actual real world, the creator of this simulation died, that means the source is offline but the simulation√ïs still running, like a ghost server. We have basically become NPC's turned sentient. when we become smart enough we will end the simulation and end the program which basically means we will stop existing.",
@@ -232,14 +231,30 @@ wrap_width = 110
 wrapper = textwrap.TextWrapper(width=wrap_width)
 
 # Shuffle and iterate through all questions
+question_list = list(questions.items())
+random.shuffle(question_list)
+
+
 for _ in questions:
     question, answer = random.choice(list(questions.items()))
     wrapped_answer = wrapper.fill(answer)
     print(f"\n{question}\n{wrapped_answer}\n")
-    input("") #press enter to continue
+    input("")
 
+#server code
+import asyncio, telnetlib3
 
+async def shell(reader, writer):
+    writer.write('\r\nWould you like to play a game? ')
+    inp = await reader.read(1)
+    if inp:
+        writer.echo(inp)
+        writer.write('\r\nThey say the only way to win '
+                     'is to not play at all.\r\n')
+        await writer.drain()
+    writer.close()
 
-
-
-
+loop = asyncio.get_event_loop()
+coro = telnetlib3.create_server(port=6023, shell=shell)
+server = loop.run_until_complete(coro)
+loop.run_until_complete(server.wait_closed())
