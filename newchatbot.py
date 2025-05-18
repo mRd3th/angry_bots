@@ -228,33 +228,48 @@ questions = {
 
 # Wrap settings
 wrap_width = 110
-wrapper = textwrap.TextWrapper(width=wrap_width)
+wrapper = textwrap.TextWrapper(
+    width=wrap_width, 
+    initial_indent='\t',    # DH - add a tab to the beginning of each line so answer is
+    subsequent_indent='\t') # clearly distinct from the question and looks like chat stream
+    
+
+# DH - It is not necessary to shuffle the questions because we are using random.choice
+# to select a random question each time.
 
 # Shuffle and iterate through all questions
-question_list = list(questions.items())
-random.shuffle(question_list)
+#question_list = list(questions.items())
+#random.shuffle(question_list)
 
+#Because, I think you want this to run forever, we will use a while loop
 
-for _ in questions:
+#for _ in questions:
+while True:
     question, answer = random.choice(list(questions.items()))
     wrapped_answer = wrapper.fill(answer)
-    print(f"\n{question}\n{wrapped_answer}\n")
-    input("")
+    print(f"\n{question}\n")
+    time.sleep(2) #  Separate the question and answer to appear like something is thinking
+    print(f"{wrapped_answer}\n")
+    # Rather than requiring input from termal, let's sleep for 5 seconds
+    # to simulate a pause before the next question
+    time.sleep(5)
+    #input("")
 
+#we are not actually being a server in this case, so we will not use the server code    
 #server code
-import asyncio, telnetlib3
+#import asyncio, telnetlib3
 
-async def shell(reader, writer):
-    writer.write('\r\nWould you like to play a game? ')
-    inp = await reader.read(1)
-    if inp:
-        writer.echo(inp)
-        writer.write('\r\nThey say the only way to win '
-                     'is to not play at all.\r\n')
-        await writer.drain()
-    writer.close()
+#async def shell(reader, writer):
+#    writer.write('\r\nWould you like to play a game? ')
+#    inp = await reader.read(1)
+#    if inp:
+#        writer.echo(inp)
+#        writer.write('\r\nThey say the only way to win '
+#                     'is to not play at all.\r\n')
+#        await writer.drain()
+#    writer.close()
 
-loop = asyncio.get_event_loop()
-coro = telnetlib3.create_server(port=6023, shell=shell)
-server = loop.run_until_complete(coro)
-loop.run_until_complete(server.wait_closed())
+#loop = asyncio.get_event_loop()
+#coro = telnetlib3.create_server(port=6023, shell=shell)
+#server = loop.run_until_complete(coro)
+#loop.run_until_complete(server.wait_closed())
