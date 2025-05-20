@@ -245,15 +245,20 @@ def index():
 def home():
     return "Flask app with scheduler running in the background!"
 
+@socketio.on('message')
+def handle_message(msg):
+    print('Message: ' + msg)
+    send(msg, broadcast=True)
 
+
+#question generator
+#not sure how to broadcast in chat 
 @socketio.on('message')
 def scheduled_chat():
     question, answer = random.choice(list(questions.items()))
     print(f"\n{question}\n")
-    send(question, broadcast=True)
     time.sleep(3)
     print(f"{answer}\n")
-    send(answer, broadcast=True)
 
 
 
