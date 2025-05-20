@@ -1,28 +1,129 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Flask Chat</title>
+    <title>Angry Bot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        #chat-container {
+            max-width: 600px;
+            margin: 30px auto;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #messages {
+            list-style-type: none;
+            padding: 0;
+            max-height: 400px;
+            overflow-y: scroll;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 10px;
+        }
+
+        .message.left {
+            justify-content: flex-start;
+        }
+
+        .message.right {
+            justify-content: flex-end;
+        }
+
+        .bubble {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 15px;
+            line-height: 1.4;
+        }
+
+        .bubble.left {
+            background-color: #e1ffc7;
+            border-top-left-radius: 0;
+        }
+
+        .bubble.right {
+            background-color: #d3e3fc;
+            border-top-right-radius: 0;
+        }
+
+        #input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 20px;
+            border: 1px solid #ccc;
+            outline: none;
+        }
+
+        button {
+            padding: 10px 20px;
+            border-radius: 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-    <h2>Flask Chat</h2>
-    <ul id="messages"></ul>
-    <input id="myMessage" autocomplete="off" placeholder="Type your message..." /><button onclick="sendMessage()">Send</button>
+    <div id="chat-container">
+        <h2>Flask Chat</h2>
+        <ul id="messages"></ul>
+        <div id="input-container">
+            <input id="myMessage" autocomplete="off" placeholder="Type your message..." />
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
 
     <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
     <script>
         var socket = io();
 
         socket.on('message', function(msg) {
-            var item = document.createElement('li');
-            item.textContent = msg;
-            document.getElementById('messages').appendChild(item);
+            addMessage(msg, 'right');
         });
 
         function sendMessage() {
             var input = document.getElementById('myMessage');
             var msg = input.value;
-            socket.send(msg);
-            input.value = '';
+            if (msg.trim() !== "") {
+                addMessage(msg, 'left');
+                socket.send(msg);
+                input.value = '';
+            }
+        }
+
+        function addMessage(msg, side) {
+            var messages = document.getElementById('messages');
+            var messageElement = document.createElement('li');
+            messageElement.classList.add('message', side);
+
+            var bubble = document.createElement('div');
+            bubble.classList.add('bubble', side);
+            bubble.textContent = msg;
+
+            messageElement.appendChild(bubble);
+            messages.appendChild(messageElement);
+            messages.scrollTop = messages.scrollHeight;
         }
     </script>
 </body>
