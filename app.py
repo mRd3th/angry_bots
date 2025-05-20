@@ -245,9 +245,9 @@ questions = {
 
 def scheduled_chat():
     question, answer = random.choice(list(questions.items()))
-    print(f"\n{question}\n")
+    socketio.emit('message', f"\n{question}")
     time.sleep(3)
-    print(f"{answer}\n")
+    socketio.emit('message', answer)
 
 
 
