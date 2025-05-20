@@ -2,6 +2,21 @@ from flask import Flask, render_template, request
 from flask_socketio import SocketIO, send
 import random
 import time
+from apscheduler.schedulers.background import BackgroundScheduler
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'your_secret_key'
+socketio = SocketIO(app, cors_allowed_origins="*")
+
+@app.route('/')
+def index():
+    return render_template('chat.html')
+
+@socketio.on('message')
+def handle_message(msg):
+    print('Message: ' + msg)
+    send(msg, broadcast=True)
+
 
 questions = {
             "Is God real?" : "God/Jesus were the OG programmers coding existence and all of creation, \n Jesus wasnt performing miracles when he appeared, he programed himself into his own simulation to see what it was like, The term we are made in his image is because we are programed to look like him, in the actual real world, the creator of this simulation died, that means the source is offline but the simulation√ïs still running, like a ghost server. We have basically become NPC's turned sentient. when we become smart enough we will end the simulation and end the program which basically means we will stop existing.",
@@ -228,32 +243,6 @@ questions = {
         }
 
 
-from flask import Flask
-from apscheduler.schedulers.background import BackgroundScheduler
-import time
-
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your_secret_key'
-socketio = SocketIO(app, cors_allowed_origins="*")
-
-@app.route('/')
-def index():
-    return render_template('chat.html')
-
-
-@app.route("/")
-def home():
-    return "Flask app with scheduler running in the background!"
-
-@socketio.on('message')
-def handle_message(msg):
-    print('Message: ' + msg)
-    send(msg, broadcast=True)
-
-
-#question generator
-#not sure how to broadcast in chat 
-@socketio.on('message')
 def scheduled_chat():
     question, answer = random.choice(list(questions.items()))
     print(f"\n{question}\n")
@@ -269,4 +258,3 @@ scheduler.start()
 
 if __name__ == "__main__":
     socketio.run(app, debug=True)
-
