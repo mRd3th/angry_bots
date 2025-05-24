@@ -1,7 +1,9 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template
 from flask_socketio import SocketIO, send
 import random
 import time
+import requests
+import json
 from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__)
@@ -243,61 +245,43 @@ questions = {
         }
 
 
-def scheduled_chat():
-    question, answer = random.choice(list(questions.items()))
-    socketio.emit('message', f"\n{question}")
-    time.sleep(3)
-    socketio.emit('message', answer)
-
-
-
-scheduler = BackgroundScheduler()
-scheduler.add_job(func=scheduled_chat, trigger="interval", seconds=20)
-scheduler.start()
-
-
-if __name__ == "__main__":
-    socketio.run(app, debug=True)
-
-#trying to add call to ollama
-#call to ollama
-import requests
-import json
-import random
-import textwrap
-import time
-
-
-def stream_from_ollama(prompt, model='hf.co/afrideva/TinyLlama-1.1B-Chat-v0.6-GGUF:Q4_K_M'):
+def query_ollama(prompt, model='hf.co/afrideva/TinyLlama-1.1B-Chat-v0.6-GGUF:Q4_K_M'):
     url = "http://localhost:11434/api/generate"
-    headers = {
-        "Content-Type": "application/json"
-    }
+    headers = {"Content-Type": "application/json"}
     data = {
         "model": model,
         "prompt": prompt,
         "stream": True
     }
 
+    full_response = ""
     response = requests.post(url, headers=headers, json=data, stream=True)
-
     if response.status_code != 200:
-        raise Exception(f"Error: {response.status_code} - {response.text}")
+        return f"Error: {response.status_code} - {response.text}"
 
-    print("TinyLlama:", end=' ', flush=True)
     for line in response.iter_lines():
         if line:
             json_data = json.loads(line.decode('utf-8'))
             token = json_data.get("response", "")
-            print(token, end='', flush=True)
-    print()  # Final newline
+            full_response += token
+    return full_response.strip()
 
 
-    stream_from_ollama(scheduled_chat)
-    socketio.emit('message', stream_from_ollama(scheduled_chat))
+def scheduled_chat():
+    question, answer = random.choice(list(questions.items()))
+    socketio.emit('message', f"Q: {question}")
+    time.sleep(3)
+    socketio.emit('message', answer)
+
+    # Optional delay to simulate typing
     time.sleep(8)
 
+    ai_response = query_ollama(answer)
+    socketio.emit('message', f"A: {ai_response}")
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=stream_from_ollama, trigger="interval", seconds=20)
+scheduler.add_job(func=scheduled_chat, trigger="interval", seconds=30)
 scheduler.start()
+
+if __name__ == "__main__":
+    socketio.run(app, debug=True)
