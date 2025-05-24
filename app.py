@@ -258,3 +258,46 @@ scheduler.start()
 
 if __name__ == "__main__":
     socketio.run(app, debug=True)
+
+#trying to add call to ollama
+#call to ollama
+import requests
+import json
+import random
+import textwrap
+import time
+
+
+def stream_from_ollama(prompt, model='hf.co/afrideva/TinyLlama-1.1B-Chat-v0.6-GGUF:Q4_K_M'):
+    url = "http://localhost:11434/api/generate"
+    headers = {
+        "Content-Type": "application/json"
+    }
+    data = {
+        "model": model,
+        "prompt": prompt,
+        "stream": True
+    }
+
+    response = requests.post(url, headers=headers, json=data, stream=True)
+
+    if response.status_code != 200:
+        raise Exception(f"Error: {response.status_code} - {response.text}")
+
+    print("TinyLlama:", end=' ', flush=True)
+    for line in response.iter_lines():
+        if line:
+            json_data = json.loads(line.decode('utf-8'))
+            token = json_data.get("response", "")
+            print(token, end='', flush=True)
+    print()  # Final newline
+
+
+    stream_from_ollama(scheduled_chat)
+    socketio.emit('message', stream_from_ollama(scheduled_chat))
+    time.sleep(8)
+
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=stream_from_ollama, trigger="interval", seconds=20)
+scheduler.start()
