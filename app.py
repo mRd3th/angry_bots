@@ -5,10 +5,21 @@ import time
 import requests
 import json
 from apscheduler.schedulers.background import BackgroundScheduler
+from playsound import playsound
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
 socketio = SocketIO(app, cors_allowed_origins="*")
+
+#chime.theme('material')
+#material warning
+#playSound(url) {
+#const audio = new Audio(url);
+#audio.play();
+#}
+#<button onclick="playSound('https://your-file.mp3');">Play</button>
+
 
 @app.route('/')
 def index():
@@ -17,6 +28,7 @@ def index():
 @socketio.on('message')
 def handle_message(msg):
     print('Message: ' + msg)
+    playsound('Argon.mp3')
     send(msg, broadcast=True)
 
 
@@ -261,9 +273,9 @@ def query_ollama(prompt, model='hf.co/afrideva/TinyLlama-1.1B-Chat-v0.6-GGUF:Q4_
 
     for line in response.iter_lines():
         if line:
-            json_data = json.loads(line.decode('utf-8'))
-            token = json_data.get("response", "")
-            full_response += token
+           json_data = json.loads(line.decode('utf-8'))
+           token = json_data.get("response", "")
+           full_response += token
     return full_response.strip()
 
 
